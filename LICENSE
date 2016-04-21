@@ -1,6 +1,6 @@
 The MIT License (MIT)
 
-Copyright (c) 2016 kikmann
+Copyright (c) 2016 Christian Hellmann
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,3 +19,27 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+---
+
+This software uses a number of third party open source components, as there are:
+
+- Highcharts JS v4.0.1 (2014-04-24)
+
+ (c) 2009-2014 Torstein Honsi
+
+ License: www.highcharts.com/license
+, For non-commercial: creative commons attribution-non commercial 3.0 license
+
+- CustomSelect - jQuery plugin for stylize select, author: Shashenko Andrei, License MIT
+- EASYDROPDOWN - A Drop-down Builder for Styleable Inputs and Menus
+* Version: 2.0.2
+, License: Creative Commons Attribution 3.0 Unported - CC BY 3.0
+, http://creativecommons.org/licenses/by/3.0/
+, This software may be used freely on commercial and non-commercial projects with attribution to the author/copyright holder.
+, Author: Patrick Kunka
+* Copyright 2013 Patrick Kunka, All Rights Reserved
+
+- jQuery JavaScript Library v1.9.1, Copyright 2005, 2012 jQuery Foundation, Inc. and other contributors
+ - Released under the MIT license
+- template from w3layouts.com, Creative Commons Attribution 3.0 Unported
