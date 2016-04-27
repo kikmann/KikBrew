@@ -42,6 +42,7 @@ class TRController:
         self.targettemp = []
         self.targetidx = 0
         self.plug = None
+        self.cc = 0
         pass
 
     def init(self, verbose ):
@@ -63,10 +64,10 @@ class TRController:
             temps = self.TempSensors.ReadTemp()
             print "found "+str(len(temps))+"Sensors"
             self.LCDDisplay.write(2, "found "+str(len(temps))+" Sensors")
-            cc = 1
+            self.cc = 1
             for sensor in temps:
-                print "Sensor "+str(cc)+" @ "+str(sensor)+" C"
-                cc += 1
+                print "Sensor "+str(self.cc)+" @ "+str(sensor)+" C"
+                self.cc += 1
             if len(temps)>0:
                 break
         
@@ -74,15 +75,17 @@ class TRController:
         print "Initializing SmartPlug"
         self.LCDDisplay.write(3, "...SmartPlug")
         plug = SmartPlug("edimax.fritz.box", ('admin', '1234'))
-        # self.RelaisBoard = RelaisBoard()
-        # self.RelaisBoard.RelaisOneOff()
-        # self.RelaisBoard.RelaisTwoOff()
-        # self.RelaisBoard.RelaisThreeOff()
-        # self.RelaisBoard.RelaisFourOff()
         p.state = "OFF"
         print
         print
         
+    def checkInitDisplay(self):
+        self.cc += 1
+        if self.cc == 60 :
+            self.cc = 0
+            self.LCDDisplay.display_init()      # ocassionaly reinit the display (#1)
+        
+    
     def readProfile(self):
         self.targettemp = []
         self.targettime = []
@@ -119,7 +122,7 @@ class TRController:
                 pass    # assume not found
 
             try:
-                    self.readProfile()
+                self.readProfile()
                 break
             except IOError as e:
                 print str(datetime.datetime.now())+": mashing.profile does not exist !"
@@ -128,20 +131,13 @@ class TRController:
 
             
     def run(self):
-        # self.RelaisBoard.RelaisOneOn()    # stirrer on
-        # time.sleep(0.3)
-        # self.RelaisBoard.RelaisTwoOn()
-        # time.sleep(0.3)
-        # self.RelaisBoard.RelaisThreeOn()
-        # time.sleep(0.3)
-        # self.RelaisBoard.RelaisFourOn()
         p.state = "ON"
 
         self.targetidx  = 0
         targetmode = targetModeEnum.heating
         targetstamp = datetime.datetime.now()
         passedtime  = 0
-        cc = 0
+        self.cc = 0
         oldtemp = -1
 
         print self.targettemp
@@ -162,25 +158,15 @@ class TRController:
                     print str(timestamp)+": pause mashing exists..."
                     temps = self.TempSensors.ReadTemp()
                     tmp = temps[0]/100.0
+                    self.checkInitDisplay()
                     self.LCDDisplay.write(4, "pauzed - "+str(nice(tmp))+"C  ")
                     time.sleep( 1 )
-                    # self.RelaisBoard.RelaisOneOff()    # stirrer on
-                    # self.RelaisBoard.RelaisTwoOff()   # but heating off
-                    # self.RelaisBoard.RelaisThreeOff()
-                    # self.RelaisBoard.RelaisFourOff()
-					p.state = "OFF"
+                    p.state = "OFF"
                     oldtemp = -1       # accept any new temp
                     continue
             
             except IOError as e:
                 if activated and targetmode == targetModeEnum.heating :    # switch it on again
-                    # self.RelaisBoard.RelaisOneOn()
-                    # time.sleep(0.3)
-                    # self.RelaisBoard.RelaisTwoOn()
-                    # time.sleep(0.3)
-                    # self.RelaisBoard.RelaisThreeOn()
-                    # time.sleep(0.3)
-                    # self.RelaisBoard.RelaisFourOn()
 					p.state = "ON"
             
             # test for stopping
@@ -194,26 +180,16 @@ class TRController:
                     print str(timestamp)+": stop mashing exists..."
                     temps = self.TempSensors.ReadTemp()
                     tmp = temps[0]/100.0
+                    self.checkInitDisplay()
                     self.LCDDisplay.write(4, "mashing stopped - "+str(nice(tmp))+"C  ")
                     time.sleep(1)
-                    # self.RelaisBoard.RelaisOneOff()    # stirrer off
-                    # self.RelaisBoard.RelaisTwoOff()   # and heating off
-                    # self.RelaisBoard.RelaisThreeOff()    
-                    # self.RelaisBoard.RelaisFourOff()
-					p.state = "OFF"
+                    p.state = "OFF"
                     oldtemp = -1    # accept any new temp
             
             except IOError as e:
                 if activated and targetmode == targetModeEnum.heating :    # switch it on again
                     self.readProfile()
-                    # self.RelaisBoard.RelaisOneOn()
-                    # time.sleep(0.3)
-                    # self.RelaisBoard.RelaisTwoOn()
-                    # time.sleep(0.3)
-                    # self.RelaisBoard.RelaisThreeOn()
-                    # time.sleep(0.3)
-                    # self.RelaisBoard.RelaisFourOn()
-					p.state = "ON"
+                    p.state = "ON"
             
             # try to get a reasonable temp
             tries = 0
@@ -233,7 +209,7 @@ class TRController:
                     break
 
                 # too much difference
-                      if tries == 3 : 
+                if tries == 3 :
                     break   # three outliers are no outliers anymore
                 
                 # .... and again !
@@ -249,22 +225,15 @@ class TRController:
             # wait until next minute
             time.sleep(0.3)
             
-            cc += 1
-            if cc == 100 :
-                cc = 0
-                self.LCDDisplay.display_init()      # ocassionaly reinit the display
-                
+            self.checkInitDisplay()
+                            
             # adjust to target temperature
 
             if targetmode == targetModeEnum.heating and self.targettemp[self.targetidx] - tolerancetemp < temp :
                 # reached target temperature
                 targetmode = targetModeEnum.holding
                 targetstamp = datetime.datetime.now()
-                # self.RelaisBoard.RelaisOneOff()
-                # self.RelaisBoard.RelaisTwoOff()
-                # self.RelaisBoard.RelaisThreeOff()
-                # self.RelaisBoard.RelaisFourOff()
-				p.state = "OFF"
+                p.state = "OFF"
 
             if targetmode == targetModeEnum.holding :
                 passedtime += 1
@@ -274,14 +243,7 @@ class TRController:
                     targetmode = targetModeEnum.heating
                     self.targetidx += 1
                     passedtime = 0
-                    # self.RelaisBoard.RelaisOneOn()
-                    # time.sleep(0.3)
-                    # self.RelaisBoard.RelaisTwoOn()
-                    # time.sleep(0.3)
-                    # self.RelaisBoard.RelaisThreeOn()
-                    # time.sleep(0.3)
-                    # self.RelaisBoard.RelaisFourOn()
-					p.state = "ON"
+                    p.state = "ON"
 
             print str(timestamp)+", running, "+str(temp)+","+str(targetmode)+","+str(self.targettemp[self.targetidx])+","+str(self.targettime[self.targetidx])+","+str(passedtime)+"\n"
             # record data
@@ -305,3 +267,9 @@ if __name__ == '__main__':
         ctrl.initialMode()
         ctrl.run()
     
+'''
+27-04-16    #1    every 60 seconds init display, even in pause & stop
+
+
+
+'''
