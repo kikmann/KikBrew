@@ -75,7 +75,6 @@ class TRController:
         print "Initializing SmartPlug"
         self.LCDDisplay.write(3, "...SmartPlug")
         plug = SmartPlug("edimax.fritz.box", ('admin', '1234'))
-        p.state = "OFF"
         print
         print
         
@@ -269,7 +268,7 @@ if __name__ == '__main__':
     
 '''
 27-04-16    #1    every 60 seconds init display, even in pause & stop
-
+27-04-16    #5    should run even if smartplug is not present
 
 
 '''
